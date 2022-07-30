@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:krestakipapp/models/photo.dart';
 import 'package:krestakipapp/models/student.dart';
 import 'package:krestakipapp/models/teacher.dart';
@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 
 class FirestoreDBService implements DBBase {
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseMessaging _messaging = FirebaseMessaging.instance;
 
   @override
   Future<bool> saveUser(MyUser users) async {
@@ -126,6 +127,17 @@ class FirestoreDBService implements DBBase {
       student = Student.fromMap(map);
 
       if (student.veliTelefonNo == phone) {
+        String? token = await _messaging.getToken();
+        student.token = token;
+        await _firestore
+            .collection("Kresler")
+            .doc(kresCode + '_' + kresAdi)
+            .collection(kresAdi)
+            .doc(kresAdi)
+            .collection("Students")
+            .doc(student.ogrID)
+            .update({'token': token});
+
         return student;
       } else {
         return student = null;
@@ -149,9 +161,14 @@ class FirestoreDBService implements DBBase {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getRatings(String ogrID) async {
+  Future<List<Map<String, dynamic>>> getRatings(
+      String kresCode, String kresAdi, String ogrID) async {
     QuerySnapshot querySnapshot = await _firestore
-        .collection('Student')
+        .collection("Kresler")
+        .doc(kresCode + '_' + kresAdi)
+        .collection(kresAdi)
+        .doc(kresAdi)
+        .collection('Students')
         .doc(ogrID)
         .collection("Ratings")
         .get();
@@ -160,6 +177,11 @@ class FirestoreDBService implements DBBase {
     for (DocumentSnapshot rating in querySnapshot.docs) {
       list.add(rating.data()! as Map<String, dynamic>);
     }
+
+    list.sort((a, b) {
+      return DateTime.parse(b['Değerlendirme Tarihi'])
+          .compareTo(DateTime.parse(a['Değerlendirme Tarihi']));
+    });
 
     return list;
   }
@@ -232,7 +254,7 @@ class FirestoreDBService implements DBBase {
       return DateTime.parse(b['Duyuru Tarihi'])
           .compareTo(DateTime.parse(a['Duyuru Tarihi']));
     });
-
+    debugPrint(duyuruList.toString());
     return duyuruList;
   }
 }

@@ -141,9 +141,10 @@ class UserModel with ChangeNotifier implements AuthBase {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getRatings(String ogrID) async {
+  Future<List<Map<String, dynamic>>> getRatings(
+      String kresCode, String kresAdi, String ogrID) async {
     try {
-      return await _userRepository.getRatings(ogrID);
+      return await _userRepository.getRatings(kresCode, kresAdi, ogrID);
     } catch (e) {
       debugPrint("User Model criter getir hata :" + e.toString());
       return List.empty();
@@ -186,7 +187,7 @@ class UserModel with ChangeNotifier implements AuthBase {
 
       return sonuc;
     } catch (e) {
-      debugPrint("User Model get announcment hata :" + e.toString());
+      debugPrint("User Model get announcement hata :" + e.toString());
       return List.empty();
     } finally {
       state = ViewState.idle;

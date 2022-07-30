@@ -12,18 +12,15 @@ class ImageWidget extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: Container(
+          height: MediaQuery.of(context).size.height * 1 / 8,
+          width: MediaQuery.of(context).size.width / 3,
+          margin: EdgeInsets.only(right: 15),
           decoration: BoxDecoration(
-            color: student.fotoUrl != null ? Colors.white : backgroundColor,
-            borderRadius: BorderRadius.all(Radius.circular(10)),
+            borderRadius: BorderRadius.only(topLeft: Radius.elliptical(75, 55)),
           ),
-
-          /// space from white container
-
-          height: 350,
-          width: 350,
           child: Stack(
             children: [
-              buildImage(),
+              buildImage(context),
               buildTopText(),
               Positioned(
                 bottom: 40,
@@ -50,7 +47,7 @@ class ImageWidget extends StatelessWidget {
                 ),
               ),
               Positioned(
-                right: 5,
+                right: 25,
                 bottom: 10,
                 child: Padding(
                   padding: const EdgeInsets.only(right: 8.0),
@@ -77,17 +74,17 @@ class ImageWidget extends StatelessWidget {
         children: [],
       );
 
-  Widget buildImage() => SizedBox.expand(
-        child: ClipRRect(
-          borderRadius: BorderRadius.all(Radius.circular(10)),
-          child: student.fotoUrl != null
-              ? Image.network(student.fotoUrl!, fit: BoxFit.cover)
-              : Center(
-                  child: Icon(
-                  Icons.person,
-                  size: 250,
-                  color: Colors.black45,
-                )),
+  Widget buildImage(BuildContext context) => Container(
+        child: student.fotoUrl != null
+            ? Image.network(student.fotoUrl!, fit: BoxFit.cover)
+            : Center(
+                child: Icon(
+                Icons.person,
+                size: 250,
+                color: Colors.black45,
+              )),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.only(topLeft: Radius.elliptical(75, 55)),
         ),
       );
 

@@ -1,11 +1,17 @@
+import 'dart:convert';
+
 import 'package:extended_image/extended_image.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:krestakipapp/View_models/user_model.dart';
 import 'package:krestakipapp/common_widget/show_photo_widget.dart';
 import 'package:krestakipapp/constants.dart';
 import 'package:krestakipapp/homepage-visitor/announcement_page.dart';
 import 'package:krestakipapp/homepage-visitor/photo_gallery.dart';
+import 'package:krestakipapp/homepage-visitor/student_page_for_visitor.dart';
 import 'package:krestakipapp/models/photo.dart';
+import 'package:krestakipapp/models/student.dart';
+import 'package:krestakipapp/services/messaging_services.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
@@ -17,10 +23,18 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<Photo>? album = [];
+  List<Map<String, dynamic>> announcements = [];
+  MessagingService _messagingService = MessagingService();
   @override
   void initState() {
-    super.initState();
     final UserModel _userModel = Provider.of<UserModel>(context, listen: false);
+    _messagingService
+        .initialize(onSelectNotification, context, _userModel.users!)
+        .then(
+          (value) => firebaseCloudMessagingListeners(),
+        );
+    super.initState();
+
     _userModel
         .getPhotoToMainGallery(
             _userModel.users!.kresCode!, _userModel.users!.kresAdi!)
@@ -29,8 +43,31 @@ class _HomePageState extends State<HomePage> {
         album = value;
       });
     });
+    _userModel
+        .getAnnouncements(
+            _userModel.users!.kresCode!, _userModel.users!.kresAdi!)
+        .then((value) {
+      if (value.isNotEmpty) {
+        setState(() {
+          announcements = value;
+        });
+      }
+    });
   }
 
+  void firebaseCloudMessagingListeners() async {
+    MessagingService.onMessage
+        .listen(_messagingService.invokeLocalNotification);
+    MessagingService.onMessageOpenedApp.listen(_pageOpenForOnLaunch);
+  }
+
+  _pageOpenForOnLaunch(RemoteMessage remoteMessage) {
+    final Map<String, dynamic> message = remoteMessage.data;
+
+    onSelectNotification(jsonEncode(message));
+  }
+
+  Future onSelectNotification(String? payload) async {}
   @override
   Widget build(BuildContext context) {
     final UserModel _userModel = Provider.of<UserModel>(context, listen: false);
@@ -51,146 +88,138 @@ class _HomePageState extends State<HomePage> {
               icon: Icon(Icons.logout),
             ),
           ]),
-      body: SingleChildScrollView(
-        child: Container(
-            width: double.infinity,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  height: kdefaultPadding,
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Fotoğraf Galerisi",
-                        style: Theme.of(context)
-                            .textTheme
-                            .headline5!
-                            .copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => PhotoGallery(album)));
-                        },
-                        child: Text(
-                          "Tümünü Gör",
-                          style: TextStyle(color: Colors.black26),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  height: 10,
-                ),
-                photoGalleryWidget(),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 14.0),
-                  child: GestureDetector(
-                    child: Container(
-                        child: Image.asset("assets/images/gallery7.png")),
-                    onTap: () {},
-                  ),
-                ),
-                SizedBox(
-                  height: 10,
-                ),
-                Row(
+      body: Container(
+          width: double.infinity,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                height: kdefaultPadding,
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                      child: Text(
-                        "Duyurular",
-                        style: Theme.of(context)
-                            .textTheme
-                            .headline5!
-                            .copyWith(fontWeight: FontWeight.bold),
-                      ),
+                    Text(
+                      "Fotoğraf Galerisi",
+                      style: Theme.of(context)
+                          .textTheme
+                          .headline5!
+                          .copyWith(fontWeight: FontWeight.bold),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(right: 11.0),
-                      child: TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => AnnouncementPage()));
-                        },
-                        child: Text(
-                          "Tümünü Gör",
-                          style: TextStyle(color: Colors.black26),
-                        ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => PhotoGallery(album)));
+                      },
+                      child: Text(
+                        "Tümünü Gör",
+                        style: TextStyle(color: Colors.black26),
                       ),
                     ),
                   ],
                 ),
-                SizedBox(
-                  height: 10,
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              photoGalleryWidget(),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14.0),
+                child: GestureDetector(
+                  child: Container(
+                      child: Image.asset("assets/images/gallery7.png")),
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => StudentPage(Student.fromMap(
+                                _userModel.users!.studentMap!))));
+                  },
                 ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 15.0),
-                  child: announcementList(),
-                ),
-              ],
-            )),
-      ),
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                    child: Text(
+                      "Duyurular",
+                      style: Theme.of(context)
+                          .textTheme
+                          .headline5!
+                          .copyWith(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 11.0),
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => AnnouncementPage()));
+                      },
+                      child: Text(
+                        "Tümünü Gör",
+                        style: TextStyle(color: Colors.black26),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 15.0),
+                child: announcementList(),
+              ),
+            ],
+          )),
     );
   }
 
   Widget announcementList() {
-    final UserModel _userModel = Provider.of<UserModel>(context, listen: false);
-    return FutureBuilder<List<Map<String, dynamic>>>(
-        future: _userModel.getAnnouncements(
-            _userModel.users!.kresCode!, _userModel.users!.kresAdi!),
-        builder: (context, sonuc) {
-          if (sonuc.hasData) {
-            var announceList = sonuc.data!;
-            if (announceList.length > 0) {
-              return ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: announceList.length > 3 ? 3 : announceList.length,
-                  itemBuilder: (context, i) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 0.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                              "${announceList[i]['Duyuru Tarihi']}      ${announceList[i]['Duyuru Başlığı']}"),
-                          /*  Text(
+    if (announcements.length > 0) {
+      return ListView.builder(
+          physics: NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          itemCount: announcements.length > 3 ? 3 : announcements.length,
+          itemBuilder: (context, i) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 0.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                      "${announcements[i]['Duyuru Tarihi']}      ${announcements[i]['Duyuru Başlığı']}"),
+                  /*  Text(
                             "Detayı Gör",
                             style: TextStyle(
                                 // fontStyle: FontStyle.italic,
                                 color: Colors.black26),
                           )*/
-                          IconButton(
-                            icon: Icon(
-                                Icons.keyboard_double_arrow_right_outlined),
-                            onPressed: () => _showAnnouncementDetail(
-                                announceList[i]['Duyuru Başlığı'],
-                                announceList[i]['Duyuru']),
-                          )
-                        ],
-                      ),
-                    );
-                  });
-            } else {
-              return Text("Henüz duyuru yok.");
-            }
-          } else
-            return Center(
-              child: Text("Henüz duyuru yok."),
+                  IconButton(
+                    icon: Icon(Icons.keyboard_double_arrow_right_outlined),
+                    onPressed: () => _showAnnouncementDetail(
+                        announcements[i]['Duyuru Başlığı'],
+                        announcements[i]['Duyuru']),
+                  )
+                ],
+              ),
             );
-        });
+          });
+    } else {
+      return Text("Henüz duyuru yok.");
+    }
   }
 
   Widget photoGalleryWidget() {
@@ -297,6 +326,79 @@ class _HomePageState extends State<HomePage> {
                 },
                 child: Text('Kapat'),
               )
+            ],
+          );
+        });
+  }
+
+  void handleMessageOnBackground() {
+    FirebaseMessaging.instance.getInitialMessage().then((remoteMessage) {
+      if (remoteMessage != null) {
+        print("dkdkdkdkdkdkdkdkdkd");
+        showDialogToVisitor(remoteMessage);
+      }
+    });
+  }
+
+  Future<void> showDialogToVisitor(RemoteMessage remoteMessage) async {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return SimpleDialog(
+            title: Text(remoteMessage.data['title']),
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(remoteMessage.data['message']),
+              ),
+              ButtonBar(
+                children: [
+/*
+                  ElevatedButton(
+                    onPressed: () async {
+                      try {
+
+                        final UserModel _userModel =
+                            Provider.of<UserModel>(context, listen: false);
+                        bool sonuc = await _firmModel.personelEkleVeSil(
+                            _userModel.users!.firma!,
+                            remoteMessage.data['gonderenUserID'],
+                            remoteMessage.data['gonderenUserEmail'],
+                            true);
+
+                        if (sonuc == true) {
+                          Navigator.of(context).pop();
+                          Get.snackbar('İşlem Tamam!', 'Kayıt Başarılı.',
+                              snackPosition: SnackPosition.BOTTOM);
+                          _sendingNotificationService
+                              .sendNotificationToPersonel(
+                                  remoteMessage.data['gönderenUserToken']);
+                        } else {
+                          Get.snackbar('HATA',
+                              'Kayıt işlemi başarısız, lütfen tekrar deneyiniz.');
+                        }
+                      } catch (e) {
+                        debugPrint(
+                            'Personel ekleme arama hatası ' + e.toString());
+                      }
+                    },
+                    style: ButtonStyle(
+                        backgroundColor:
+                            MaterialStateProperty.all(Colors.orangeAccent)),
+                    child: Text("Kaydet"),
+                  ),
+*/
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    style: ButtonStyle(
+                        backgroundColor:
+                            MaterialStateProperty.all(Colors.blueGrey)),
+                    child: Text("İptal"),
+                  ),
+                ],
+              ),
             ],
           );
         });

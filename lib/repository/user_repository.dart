@@ -1,5 +1,4 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:krestakipapp/locator.dart';
 import 'package:krestakipapp/models/photo.dart';
 import 'package:krestakipapp/models/student.dart';
@@ -7,7 +6,6 @@ import 'package:krestakipapp/models/user.dart';
 import 'package:krestakipapp/services/FirebaseAuthServices.dart';
 import 'package:krestakipapp/services/base/auth_base.dart';
 import 'package:krestakipapp/services/firestore_db_service.dart';
-import 'package:krestakipapp/services/storage_service.dart';
 
 enum AppMode { DEBUG, RELEASE }
 
@@ -71,6 +69,7 @@ class UserRepository implements AuthBase {
       _user.studentMap = student.toMap();
       _user.username = student.veliAdiSoyadi;
       _user.position = 'visitor';
+      print("repo" + _user.toString());
       bool _sonuc = await _firestoreDBService.saveUser(_user);
       if (_sonuc) {
         return student;
@@ -87,8 +86,9 @@ class UserRepository implements AuthBase {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getRatings(String ogrID) async {
-    return await _firestoreDBService.getRatings(ogrID);
+  Future<List<Map<String, dynamic>>> getRatings(
+      String kresCode, String kresAdi, String ogrID) async {
+    return await _firestoreDBService.getRatings(kresCode, kresAdi, ogrID);
   }
 
   @override

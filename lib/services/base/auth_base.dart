@@ -15,7 +15,8 @@ abstract class AuthBase {
   Future<Student?> queryOgrID(
       String kresCode, String kresAdi, String ogrID, String phoneNumber);
   Future<List<String>> getCriteria();
-  Future<List<Map<String, dynamic>>> getRatings(String ogrID);
+  Future<List<Map<String, dynamic>>> getRatings(
+      String kresCode, String kresAdi, String ogrID);
   Future<List<Photo>> getPhotoToMainGallery(String kresCode, String kresAdi);
   Future<List<Photo>> getPhotoToSpecialGallery(
       String kresCode, String kresAdi, String ogrID);

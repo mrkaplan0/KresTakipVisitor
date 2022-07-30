@@ -33,7 +33,7 @@
 
 # Web related
 lib/generated_plugin_registrant.dart
-
+lib/services/sending_notification_service.dart
 # Symbolication related
 app.*.symbols
 

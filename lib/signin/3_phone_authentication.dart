@@ -37,17 +37,18 @@ class VerifyPhoneNumberScreen extends StatelessWidget {
     return SafeArea(
       child: FirebasePhoneAuthHandler(
         phoneNumber: phoneNumber,
-        timeOutDuration: const Duration(seconds: 60),
+        autoRetrievalTimeOutDuration: const Duration(seconds: 60),
         onLoginSuccess: (userCredential, autoVerified) async {
           await loginSuccessMethod(userCredential, context);
         },
-        onLoginFailed: (authException) {
-          _showSnackBar(
-            context,
-            'Bir şeyler yanlış gitti (${authException.message})',
-          );
-
+        onLoginFailed: (authException, st) {
           debugPrint(authException.message);
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ErrorLoginPage(),
+              ));
+
 // handle error further if needed
         },
         builder: (context, controller) {
@@ -77,7 +78,8 @@ class VerifyPhoneNumberScreen extends StatelessWidget {
                       const SizedBox(height: 30),
                       AnimatedContainer(
                         duration: const Duration(seconds: 1),
-                        height: controller.timerIsActive ? null : 0,
+                        height:
+                            controller.isListeningForOtpAutoRetrieve ? null : 0,
                         child: Column(
                           children: const [
                             CircularProgressIndicator.adaptive(),
@@ -99,9 +101,8 @@ class VerifyPhoneNumberScreen extends StatelessWidget {
                         onChanged: (String v) async {
                           _enteredOTP = v;
                           if (_enteredOTP?.length == 6) {
-                            final isValidOTP = await controller.verifyOTP(
-                              otp: _enteredOTP!,
-                            );
+                            final isValidOTP =
+                                await controller.verifyOtp(_enteredOTP!);
 // Incorrect OTP
                             if (!isValidOTP) {
                               _showSnackBar(
@@ -115,8 +116,8 @@ class VerifyPhoneNumberScreen extends StatelessWidget {
                       if (controller.codeSent)
                         TextButton(
                           child: Text(
-                            controller.timerIsActive
-                                ? "${controller.timerCount.inSeconds}s"
+                            controller.isListeningForOtpAutoRetrieve
+                                ? "${controller.autoRetrievalTimeLeft}s"
                                 : "Tekrar Gönder",
                             style: const TextStyle(
                               color: Colors.black,
@@ -124,7 +125,7 @@ class VerifyPhoneNumberScreen extends StatelessWidget {
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                          onPressed: controller.timerIsActive
+                          onPressed: controller.isListeningForOtpAutoRetrieve
                               ? null
                               : () async => await controller.sendOTP(),
                         ),

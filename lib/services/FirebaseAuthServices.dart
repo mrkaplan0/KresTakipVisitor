@@ -30,6 +30,7 @@ class FirebaseAuthService implements AuthBase {
   Future<bool> signOut() async {
     try {
       await _auth.signOut();
+      await _auth.currentUser?.delete();
       return true;
     } catch (e) {
       debugPrint("Hata SignOut $e");
@@ -62,12 +63,6 @@ class FirebaseAuthService implements AuthBase {
   @override
   Future<List<String>> getCriteria() {
     // TODO: implement getCriteria
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<List<Map<String, dynamic>>> getRatings(String ogrID) {
-    // TODO: implement getRatings
     throw UnimplementedError();
   }
 
@@ -107,6 +102,13 @@ class FirebaseAuthService implements AuthBase {
   Future<List<Photo>> getPhotoToSpecialGallery(
       String kresCode, String kresAdi, String ogrID) {
     // TODO: implement getPhotoToSpecialGallery
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getRatings(
+      String kresCode, String kresAdi, String ogrID) {
+    // TODO: implement getRatings
     throw UnimplementedError();
   }
 }
