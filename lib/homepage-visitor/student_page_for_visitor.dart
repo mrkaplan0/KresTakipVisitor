@@ -5,6 +5,7 @@ import 'package:krestakipapp/View_models/user_model.dart';
 import 'package:krestakipapp/common_widget/show_photo_widget.dart';
 import 'package:krestakipapp/models/photo.dart';
 import 'package:krestakipapp/models/student.dart';
+import 'package:krestakipapp/services/admob_service.dart';
 import 'package:provider/provider.dart';
 
 import '../common_widget/show_rating_details.dart';
@@ -30,6 +31,8 @@ class _StudentPageState extends State<StudentPage> {
     super.initState();
     getRatingsMethod().then((value) => setState(() {}));
     getIndividualPhotos().then((value) => setState(() {}));
+
+    AdmobService.showInterstitialAd();
   }
 
   @override

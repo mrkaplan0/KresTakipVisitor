@@ -2,10 +2,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import 'package:krestakipapp/landing_page.dart';
-import 'package:krestakipapp/main.dart';
-
+import 'package:krestakipapp/services/admob_service.dart';
 import 'package:provider/provider.dart';
 import 'View_models/user_model.dart';
 import 'constants.dart';
@@ -20,9 +18,12 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 Future<void> main() async {
+
   WidgetsFlutterBinding.ensureInitialized();
+
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   setupLocator();
+  AdmobService.adMobinitialize();
   runApp(MyApp());
 }
 

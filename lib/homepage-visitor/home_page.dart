@@ -11,6 +11,7 @@ import 'package:krestakipapp/homepage-visitor/photo_gallery.dart';
 import 'package:krestakipapp/homepage-visitor/student_page_for_visitor.dart';
 import 'package:krestakipapp/models/photo.dart';
 import 'package:krestakipapp/models/student.dart';
+import 'package:krestakipapp/services/admob_service.dart';
 import 'package:krestakipapp/services/messaging_services.dart';
 import 'package:provider/provider.dart';
 
@@ -25,6 +26,7 @@ class _HomePageState extends State<HomePage> {
   List<Photo>? album = [];
   List<Map<String, dynamic>> announcements = [];
   MessagingService _messagingService = MessagingService();
+
   @override
   void initState() {
     final UserModel _userModel = Provider.of<UserModel>(context, listen: false);
@@ -33,7 +35,6 @@ class _HomePageState extends State<HomePage> {
         .then(
           (value) => firebaseCloudMessagingListeners(),
         );
-    super.initState();
 
     _userModel
         .getPhotoToMainGallery(
@@ -53,6 +54,8 @@ class _HomePageState extends State<HomePage> {
         });
       }
     });
+    AdmobService.createInterstitialAd();
+    super.initState();
   }
 
   void firebaseCloudMessagingListeners() async {
@@ -68,6 +71,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future onSelectNotification(String? payload) async {}
+
   @override
   Widget build(BuildContext context) {
     final UserModel _userModel = Provider.of<UserModel>(context, listen: false);
@@ -79,7 +83,7 @@ class _HomePageState extends State<HomePage> {
             "${_userModel.users!.kresAdi}",
             style: Theme.of(context)
                 .textTheme
-                .headline6!
+                .titleLarge!
                 .copyWith(fontWeight: FontWeight.bold, color: Colors.grey),
           ),
           actions: [
@@ -106,7 +110,7 @@ class _HomePageState extends State<HomePage> {
                       "Fotoğraf Galerisi",
                       style: Theme.of(context)
                           .textTheme
-                          .headline5!
+                          .headlineSmall!
                           .copyWith(fontWeight: FontWeight.bold),
                     ),
                     TextButton(
@@ -154,7 +158,7 @@ class _HomePageState extends State<HomePage> {
                       "Duyurular",
                       style: Theme.of(context)
                           .textTheme
-                          .headline5!
+                          .headlineSmall!
                           .copyWith(fontWeight: FontWeight.bold),
                     ),
                   ),

@@ -2,6 +2,7 @@ import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:krestakipapp/common_widget/show_photo_widget.dart';
 import 'package:krestakipapp/models/photo.dart';
+import 'package:krestakipapp/services/admob_service.dart';
 
 class PhotoGallery extends StatefulWidget {
   final List<Photo>? album;
@@ -13,6 +14,12 @@ class PhotoGallery extends StatefulWidget {
 }
 
 class _PhotoGalleryState extends State<PhotoGallery> {
+  int clickCount =0;
+  @override
+  void initState() {
+    super.initState();
+AdmobService.showInterstitialAd();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,7 +28,7 @@ class _PhotoGalleryState extends State<PhotoGallery> {
           "Fotoğraf Galerisi",
           style: Theme.of(context)
               .textTheme
-              .headline5!
+              .headlineSmall!
               .copyWith(fontWeight: FontWeight.bold),
         ),
       ),
@@ -53,7 +60,11 @@ class _PhotoGalleryState extends State<PhotoGallery> {
                     ),
                   ),
                 ),
-                onTap: () {
+                onTap: () { clickCount++;
+                  if(clickCount==4){
+                    AdmobService.showInterstitialAd();
+                    clickCount=0;
+                  }
                   showDialog(
                       context: context,
                       builder: (context) {
