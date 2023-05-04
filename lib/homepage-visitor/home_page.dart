@@ -36,27 +36,12 @@ class _HomePageState extends State<HomePage> {
           (value) => firebaseCloudMessagingListeners(),
         );
 
-    _userModel
-        .getPhotoToMainGallery(
-            _userModel.users!.kresCode!, _userModel.users!.kresAdi!)
-        .then((value) {
-      setState(() {
-        album = value;
-      });
-    });
-    _userModel
-        .getAnnouncements(
-            _userModel.users!.kresCode!, _userModel.users!.kresAdi!)
-        .then((value) {
-      if (value.isNotEmpty) {
-        setState(() {
-          announcements = value;
-        });
-      }
-    });
+    getPhotosUndAnnounce();
     AdmobService.createInterstitialAd();
     super.initState();
   }
+
+
 
   void firebaseCloudMessagingListeners() async {
     MessagingService.onMessage
@@ -338,12 +323,28 @@ class _HomePageState extends State<HomePage> {
   void handleMessageOnBackground() {
     FirebaseMessaging.instance.getInitialMessage().then((remoteMessage) {
       if (remoteMessage != null) {
-        print("dkdkdkdkdkdkdkdkdkd");
         showDialogToVisitor(remoteMessage);
       }
     });
   }
+  void getPhotosUndAnnounce() {
+    final UserModel _userModel = Provider.of<UserModel>(context, listen: false);
+    _userModel
+        .getPhotoToMainGallery(
+        _userModel.users!.kresCode!, _userModel.users!.kresAdi!)
+        .then((value) {album = value;
+    });
+    _userModel
+        .getAnnouncements(
+        _userModel.users!.kresCode!, _userModel.users!.kresAdi!)
+        .then((value) {
+      if (value.isNotEmpty) {announcements = value;
+      }
+    });
+    setState(() {
 
+    });
+  }
   Future<void> showDialogToVisitor(RemoteMessage remoteMessage) async {
     showDialog(
         context: context,

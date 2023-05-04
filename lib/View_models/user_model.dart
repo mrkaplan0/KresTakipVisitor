@@ -55,7 +55,7 @@ class UserModel with ChangeNotifier implements AuthBase {
     try {
       state = ViewState.busy;
       bool sonuc = await _userRepository.signOut();
-
+deleteUser();
       _users = null;
       return sonuc;
     } catch (e) {
